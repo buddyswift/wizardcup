@@ -41,7 +41,7 @@ async function fetchAndPost() {
         const task = tasks[0];
         lastPostedKey = task.Key;
 
-        const channel = client.channels.cache.find(ch => ch.name === 'test');
+        const channel = client.channels.cache.find(ch => ch.name === 'bot-test');
 
         if (channel && task) {
             const messageContent = `
