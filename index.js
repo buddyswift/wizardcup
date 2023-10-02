@@ -11,6 +11,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { persistSession: fals
 let lastPostedKey = 0; // Initialize with default value
 
 client.once('ready', async () => {
+    lastPostedKey = await getLastPostedKey();  // Get the last posted key from the database
+    console.log(`Last posted key retrieved: ${lastPostedKey}`);
+
     console.log('Bot is ready!');
     await fetchAndPost();
     client.destroy(); // End the client session after the task is done
@@ -20,20 +23,46 @@ client.login(BOT_TOKEN);
 
 async function getLastPostedKey() {
     let { data, error } = await supabase.from('StateTable').select('LastPostedKey').limit(1);
-    if (error) throw error;
-
+    if (error) {
+        console.error("Error fetching LastPostedKey:", error.message);
+        throw error;
+    }
     return data[0]?.LastPostedKey || 0;
 }
 
 async function setLastPostedKey(key) {
-    let { error } = await supabase.from('StateTable').upsert([{ LastPostedKey: key }]);
-    if (error) throw error;
+    // Fetch the first row to determine if a row exists
+    const { data, error: fetchError } = await supabase.from('StateTable').select('LastPostedKey').limit(1);
+    
+    if (fetchError) {
+        console.error("Error fetching from StateTable:", fetchError.message);
+        throw fetchError;
+    }
+
+    if (data && data.length > 0) {
+        // If a row exists, update it
+        const { error: updateError } = await supabase.from('StateTable')
+            .update({ LastPostedKey: key })
+            .eq('LastPostedKey', data[0].LastPostedKey);
+        
+        if (updateError) {
+            console.error("Error updating LastPostedKey:", updateError.message);
+            throw updateError;
+        }
+    } else {
+        // If no row exists, insert one
+        const { error: insertError } = await supabase.from('StateTable')
+            .insert([{ LastPostedKey: key }]);
+        
+        if (insertError) {
+            console.error("Error inserting LastPostedKey:", insertError.message);
+            throw insertError;
+        }
+    }
 }
 
 async function fetchAndPost() {
     try {
-        const lastPostedKey = await getLastPostedKey();
-
         let { data: tasks, error } = await supabase
             .from('Task')
             .select('*')
@@ -78,12 +107,15 @@ async function fetchAndPost() {
 
             channel.send({ embeds: [embed] });
 
-            if (tasks && tasks.length > 0) {
+            console.log(`Task with Key: ${task.Key} posted. Last posted key is now: ${lastPostedKey}`);
+        }
+
+        if (tasks && tasks.length > 0) {
             const newLastPostedKey = tasks[tasks.length - 1].Key;
             await setLastPostedKey(newLastPostedKey);
         }
+
     } catch (error) {
         console.error('An error occurred:', error);
     }
 }
-
