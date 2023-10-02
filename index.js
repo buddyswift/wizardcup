@@ -18,8 +18,22 @@ client.once('ready', async () => {
 
 client.login(BOT_TOKEN);
 
+async function getLastPostedKey() {
+    let { data, error } = await supabase.from('StateTable').select('LastPostedKey').limit(1);
+    if (error) throw error;
+
+    return data[0]?.LastPostedKey || 0;
+}
+
+async function setLastPostedKey(key) {
+    let { error } = await supabase.from('StateTable').upsert([{ LastPostedKey: key }]);
+    if (error) throw error;
+}
+
 async function fetchAndPost() {
     try {
+        const lastPostedKey = await getLastPostedKey();
+
         let { data: tasks, error } = await supabase
             .from('Task')
             .select('*')
@@ -63,8 +77,13 @@ async function fetchAndPost() {
             }
 
             channel.send({ embeds: [embed] });
+
+            if (tasks && tasks.length > 0) {
+            const newLastPostedKey = tasks[tasks.length - 1].Key;
+            await setLastPostedKey(newLastPostedKey);
         }
     } catch (error) {
         console.error('An error occurred:', error);
     }
 }
+
