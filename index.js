@@ -84,7 +84,14 @@ async function fetchAndPost() {
             console.log('Channel not found.');
             return;
         }
-
+        
+        // Divider messages
+        channel.send("🔔 New Tasks 🔔");
+        channel.send("\u200B");
+        const date = new Date();
+        channel.send(`📅 **Tasks for ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}** 📅`);
+        channel.send("\u200B");
+        
         for (const task of tasks) {
             console.log(`Processing task with Key: ${task.Key}`);
             lastPostedKey = task.Key;
