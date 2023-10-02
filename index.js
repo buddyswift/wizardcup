@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const { createClient } = require('@supabase/supabase-js');
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -10,11 +10,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let lastPostedKey = 0; // Initialize with default value
 
-
 client.once('ready', async () => {
     console.log('Bot is ready!');
     await fetchAndPost();
-
     client.destroy(); // End the client session after the task is done
 });
 
@@ -25,7 +23,7 @@ async function fetchAndPost() {
         let { data: tasks, error } = await supabase
             .from('Task')
             .select('*')
-            .limit(1)
+            .limit(4)
             .gt('Key', lastPostedKey);
 
         if (error) {
@@ -38,22 +36,33 @@ async function fetchAndPost() {
             return;
         }
 
-        const task = tasks[0];
-        lastPostedKey = task.Key;
-
         const channel = client.channels.cache.find(ch => ch.name === 'bot-test');
+        if (!channel) {
+            console.log('Channel not found.');
+            return;
+        }
 
-        if (channel && task) {
-            const messageContent = `
-                Task Name: ${task['Task Name']}
-                Activity Type: ${task['Activity Type']}
-                Description: ${task.Description}
-                Submission Type: ${task['Submission Type']}
-            `;
+        for (const task of tasks) {
+            console.log(`Processing task with Key: ${task.Key}`);
+            lastPostedKey = task.Key;
 
-            channel.send(messageContent);
-        } else {
-            console.log('Channel not found or task is empty.');
+            const embed = new EmbedBuilder();
+            embed.setTitle(`**${task['Title']}**`);
+            embed.addFields(
+                { name: `**📌 Activity Type**`, value: `*${task['Category']}*` },
+                { name: `**📝 Description**`, value: `*${task['Short Description']}*` },
+                { name: `**🔗 Submission Type**`, value: `*${task['Submission Type']}*` }
+            );
+
+            if (task['More Information']) {
+                embed.addFields({ name: '**Additional Information**', value: `*${task['More Information']}*` });
+            }
+
+            if (task['Image']) {
+                embed.setThumbnail(task['Image']);
+            }
+
+            channel.send({ embeds: [embed] });
         }
     } catch (error) {
         console.error('An error occurred:', error);
