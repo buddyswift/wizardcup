@@ -86,7 +86,7 @@ async function fetchAndPost() {
         }
         
         // Divider messages
-        channel.send("🔔 New Tasks 🔔");
+        channel.send("*Ah, new challenges to be met! Students, you have 6 hours to complete the following tasks. With every challenge, there is a lesson to be learned.*");
         channel.send("\u200B");
         const date = new Date();
         channel.send(`📅 **Tasks for ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}** 📅`);
