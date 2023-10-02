@@ -23,7 +23,7 @@ client.login(BOT_TOKEN);
 async function fetchAndPost() {
     try {
         let { data: tasks, error } = await supabase
-            .from('Tasks')
+            .from('Task')
             .select('*')
             .limit(1)
             .gt('Key', lastPostedKey);
