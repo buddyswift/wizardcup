@@ -66,8 +66,10 @@ async function fetchAndPost() {
         let { data: tasks, error } = await supabase
             .from('Task')
             .select('*')
+            .order('Key', { ascending: true })  // <-- Add this line to sort results by the Key
             .limit(4)
             .gt('Key', lastPostedKey);
+
 
         if (error) {
             console.error('Error fetching data:', error.message);
@@ -84,14 +86,7 @@ async function fetchAndPost() {
             console.log('Channel not found.');
             return;
         }
-        
-        // Divider messages
-        channel.send("*Ah, new challenges to be met! Students, you have 6 hours to complete the following tasks. With every challenge, there is a lesson to be learned.*");
-        channel.send("\u200B");
-        const date = new Date();
-        channel.send(`📅 **Tasks for ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}** 📅`);
-        channel.send("\u200B");
-        
+
         for (const task of tasks) {
             console.log(`Processing task with Key: ${task.Key}`);
             lastPostedKey = task.Key;
