@@ -86,6 +86,22 @@ async function fetchAndPost() {
             console.log('Channel not found.');
             return;
         }
+        
+        const currentDateTime = new Date().toLocaleString('en-US', {
+            timeZone: 'UTC',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        const initialMessage = `Ah, new challenges to be met! Students, you have 6 hours to complete the following tasks. With every challenge, there is a lesson to be learned.
+​
+📅 Tasks for ${currentDateTime} 📅`;
+
+        channel.send(initialMessage); // Send the initial message to the channel
 
         for (const task of tasks) {
             console.log(`Processing task with Key: ${task.Key}`);
