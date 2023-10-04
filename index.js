@@ -97,7 +97,7 @@ async function fetchAndPost() {
             year: 'numeric'
         });
 
-        const initialMessage = `Ah, new challenges to be met! Students, you have 6 hours to complete the following tasks. With every challenge, there is a lesson to be learned.
+        const initialMessage = `*Ah, new challenges to be met! Students, you have 6 hours to complete the following tasks. With every challenge, there is a lesson to be learned.*
 ​
 📅 Tasks for ${currentDateTime} 📅`;
 
