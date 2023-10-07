@@ -81,7 +81,7 @@ async function fetchAndPost() {
             return;
         }
 
-        const channel = client.channels.cache.find(ch => ch.name === 'tasks');
+        const channel = client.channels.cache.find(ch => ch.name === 'current-tasks');
         if (!channel) {
             console.log('Channel not found.');
             return;
